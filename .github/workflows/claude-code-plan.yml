@@ -38,12 +38,9 @@ jobs:
             2. Identify all files that will need to be created or modified
             3. Break down the implementation into clear, ordered steps
             4. For each step, specify the exact files and what changes are needed
-            5. If anything is unclear or ambiguous, list your questions
+            5. Determine if you have any questions or ambiguities that MUST be resolved before implementing
 
-            Post your plan as a well-formatted Markdown comment on the issue using:
-            `gh issue comment ${{ github.event.issue.number }} --body "YOUR_MARKDOWN_HERE"`
-
-            Use this exact Markdown structure:
+            Write the plan to /tmp/plan.md using this exact Markdown structure:
 
             ## Plan d'implémentation
 
@@ -54,17 +51,45 @@ jobs:
             ### Étape 2 : [title]
             ...
 
-            ## Questions
-            - List any questions or ambiguities (or "Aucune" if none)
-
             ## Estimation
-            - Complexity: low/medium/high
-            - Estimated effort: X hours/days
+            - Complexité : faible/moyenne/élevée
+            - Effort estimé : X heures/jours
 
-            IMPORTANT: The comment MUST be well-formatted Markdown with headers, bullet points, and code blocks. Write the body to a temporary file and use `gh issue comment ${{ github.event.issue.number }} --body-file /tmp/plan.md` to avoid shell escaping issues.
+            ## Questions
+            - List any questions (or "Aucune question." if none)
+
+            Then post it: `gh issue comment ${{ github.event.issue.number }} --body-file /tmp/plan.md`
+
+            CRITICAL final step — decide the next action:
+            - If you have questions that MUST be answered before implementing, write "HAS_QUESTIONS" to /tmp/plan-result.txt
+            - If the plan is clear and ready to implement, write "READY" to /tmp/plan-result.txt
           claude_args: >-
             --max-turns 30
             --allowedTools "Bash(gh issue view *),Bash(gh issue comment *),Bash(cat *),Bash(echo *)"
+
+      - name: Read plan result
+        id: result
+        if: success()
+        run: |
+          if [ -f /tmp/plan-result.txt ]; then
+            echo "status=$(cat /tmp/plan-result.txt)" >> $GITHUB_OUTPUT
+          else
+            echo "status=HAS_QUESTIONS" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Add next label
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const status = '${{ steps.result.outputs.status }}'.trim();
+            const label = status === 'READY' ? 'claude-code-action' : 'needs-clarification';
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              labels: [label]
+            });
 
       - name: Remove trigger label
         if: always()
