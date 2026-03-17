@@ -65,7 +65,7 @@ jobs:
             - If the plan is clear and ready to implement, write "READY" to /tmp/plan-result.txt
           claude_args: >-
             --max-turns 30
-            --allowedTools "Bash(gh issue view *),Bash(gh issue comment *),Bash(cat *),Bash(echo *)"
+            --allowedTools "Bash(gh issue view *),Bash(gh issue comment *),Bash(cat *),Bash(echo *),Write,Edit,Read"
 
       - name: Read plan result
         id: result
