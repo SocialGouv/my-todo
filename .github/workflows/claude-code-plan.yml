@@ -32,20 +32,39 @@ jobs:
           prompt: |
             Read the issue #${{ github.event.issue.number }} carefully using `gh issue view ${{ github.event.issue.number }}`.
 
-            Your goal is to produce a micro implementation plan. Do NOT write any code or create a PR.
+            Your goal is to produce a detailed micro implementation plan. Do NOT write any code or create a PR.
 
-            1. Analyze the codebase to understand the existing architecture
-            2. Identify the files that will need to be created or modified
+            1. Analyze the codebase thoroughly to understand the existing architecture
+            2. Identify all files that will need to be created or modified
             3. Break down the implementation into clear, ordered steps
-            4. If anything is unclear or ambiguous, list your questions
+            4. For each step, specify the exact files and what changes are needed
+            5. If anything is unclear or ambiguous, list your questions
 
-            Post your plan as a comment on the issue using `gh issue comment ${{ github.event.issue.number }}`. Format:
-            - **Plan d'implémentation** : the ordered list of steps with files involved
-            - **Questions** (if any) : what you need clarified before implementing
-            - **Estimation** : rough complexity assessment
+            Post your plan as a well-formatted Markdown comment on the issue using:
+            `gh issue comment ${{ github.event.issue.number }} --body "YOUR_MARKDOWN_HERE"`
+
+            Use this exact Markdown structure:
+
+            ## Plan d'implémentation
+
+            ### Étape 1 : [title]
+            - **Fichiers** : `path/to/file.ts`, `path/to/other.ts`
+            - **Détails** : what to do in each file
+
+            ### Étape 2 : [title]
+            ...
+
+            ## Questions
+            - List any questions or ambiguities (or "Aucune" if none)
+
+            ## Estimation
+            - Complexity: low/medium/high
+            - Estimated effort: X hours/days
+
+            IMPORTANT: The comment MUST be well-formatted Markdown with headers, bullet points, and code blocks. Write the body to a temporary file and use `gh issue comment ${{ github.event.issue.number }} --body-file /tmp/plan.md` to avoid shell escaping issues.
           claude_args: >-
             --max-turns 30
-            --allowedTools "Bash(gh issue view *),Bash(gh issue comment *)"
+            --allowedTools "Bash(gh issue view *),Bash(gh issue comment *),Bash(cat *),Bash(echo *)"
 
       - name: Remove trigger label
         if: always()
