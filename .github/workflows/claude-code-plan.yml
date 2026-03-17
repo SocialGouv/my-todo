@@ -30,7 +30,7 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           show_full_output: true
           prompt: |
-            Read the issue #${{ github.event.issue.number }} carefully.
+            Read the issue #${{ github.event.issue.number }} carefully using `gh issue view ${{ github.event.issue.number }}`.
 
             Your goal is to produce a micro implementation plan. Do NOT write any code or create a PR.
 
@@ -39,12 +39,13 @@ jobs:
             3. Break down the implementation into clear, ordered steps
             4. If anything is unclear or ambiguous, list your questions
 
-            Post a comment on the issue with:
+            Post your plan as a comment on the issue using `gh issue comment ${{ github.event.issue.number }}`. Format:
             - **Plan d'implémentation** : the ordered list of steps with files involved
             - **Questions** (if any) : what you need clarified before implementing
             - **Estimation** : rough complexity assessment
           claude_args: >-
             --max-turns 30
+            --allowedTools "Bash(gh issue view *),Bash(gh issue comment *)"
 
       - name: Remove trigger label
         if: always()
