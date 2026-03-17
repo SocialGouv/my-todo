@@ -29,7 +29,7 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           show_full_output: true
-          direct_prompt: |
+          prompt: |
             Read the issue #${{ github.event.issue.number }} carefully.
 
             Your goal is to produce a micro implementation plan. Do NOT write any code or create a PR.
@@ -43,8 +43,6 @@ jobs:
             - **Plan d'implémentation** : the ordered list of steps with files involved
             - **Questions** (if any) : what you need clarified before implementing
             - **Estimation** : rough complexity assessment
-
-            Use `gh` CLI to post the comment on the issue.
           claude_args: >-
             --max-turns 30
 
