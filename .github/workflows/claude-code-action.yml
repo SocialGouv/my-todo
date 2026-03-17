@@ -1,0 +1,56 @@
+name: Claude Code Action
+
+on:
+  issues:
+    types: [labeled]
+
+concurrency:
+  cancel-in-progress: false
+  group: claude-issue-${{ github.event.issue.number }}
+
+jobs:
+  claude:
+    if: github.event.label.name == 'claude-code-action'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude Code
+        id: claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          branch_prefix: "feat/claude-"
+          show_full_output: true
+          direct_prompt: |
+            Read the issue #${{ github.event.issue.number }} and all its comments carefully.
+            The comments may contain a micro implementation plan and answers to questions — follow them.
+            Implement exactly what is described.
+            Create a PR with the changes.
+          claude_args: >-
+            --max-turns 100
+
+      - name: Remove trigger label
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.issue.number,
+                name: 'claude-code-action'
+              });
+            } catch (e) {
+              // Label might already be removed
+            }
