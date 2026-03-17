@@ -31,7 +31,7 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           branch_prefix: "feat/claude-"
           show_full_output: true
-          direct_prompt: |
+          prompt: |
             Read the issue #${{ github.event.issue.number }} and all its comments carefully.
             The comments may contain a micro implementation plan and answers to questions — follow them.
             Implement exactly what is described.
